@@ -24,10 +24,3 @@
 ## Notes
 
 This scaffold is intentionally additive and designed to wrap upstream Ultima-Adventures primitives instead of replacing core server systems.
-
-
-## RunUO script placement
-
-For shard script compilation, place sources under `Custom/StewardsOfSosaria/...` (mirrored in this repo).
-
-- Added concrete `TownService` and `TaskService` implementations for v1 overlap checks, task prioritization, dependency resolution, and reservation-expiry sweeping.
