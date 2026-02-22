@@ -19,60 +19,59 @@
 
 ---
 
-## 1) Pillars
+# Stewards of Sosaria — v1 Kickoff Packet
 
-1. **Player Governance, NPC Execution**
-   - Players set intent (policy, queue, priorities), NPCs perform implementation.
-2. **Persistent World Consequences**
-   - Every task, stockpile move, build stage, and policy action is serialized and recoverable.
-3. **Fair Multiplayer Controls**
-   - Possession and administration are constrained by permission, cooldowns, and logging.
-4. **Scalable Simulation**
-   - Close towns run high-fidelity simulation; distant towns run low-frequency aggregate sim.
+This document describes the **Stewards of Sosaria** vertical slice and core decisions for `v1` of the project 
+as implemented on the RunUO-based Ultima-Adventures server.
+
+The sections below incorporate both the original design spec and the finalized 
+decisions on ownership, PvP posture, possession rules, assets, boundaries, economy, 
+roles/permissions, and region controls.
 
 ---
 
-## 2) Modular Architecture
+## 1) Shard Scope & Rules (V1)
 
-## 2.1 Assemblies / Namespaces (recommended)
+**Ownership Modes Enabled:** Player | Guild  
+(= no Faction in V1)
 
-- `Sosaria.Towns.Core`
-  - Domain models, enums, rules, validation, interfaces.
-- `Sosaria.Towns.Services`
-  - Task scheduler, reservation service, stockpile resolver, construction service, threat service.
-- `Sosaria.Towns.Sim`
-  - Tick orchestrator, lo-fi vs hi-fi simulation modes, meter updates.
-- `Sosaria.Towns.Persistence`
-  - Serialization, migration handlers, snapshot/recovery logic.
-- `Sosaria.Towns.UI`
-  - Gumps/menus, map overlay commands, admin tools.
-- `Sosaria.Towns.Integration`
-  - Hooks to ServUO/RunUO systems (regions, multis, mobiles, pathfinding, factions/guilds).
-- `Sosaria.Towns.Tests`
-  - Unit/integration tests (task dependency resolution, reservation correctness, policy permissions).
+**PvP Posture (V1):** PvE-only threats (monster/bandit raids);  
+No player or guild takeovers.
 
-## 2.2 High-Level Runtime Flow
+**NPC Possession Rules:**  
+- Cooldowns: 15m/player, 10m/NPC  
+- Must not have been in combat last 30s  
+- Disallowed within dungeons / PvP regions / combat panic  
+- Role requirements: Governor, Captain, Quartermaster, Magistrate
 
-1. **Player action** (gump/menu/command) writes intent to core services.
-2. Services emit domain events (`TaskQueued`, `PolicyChanged`, `RaidTriggered`).
-3. Sim tick consumes events and updates affected towns/NPCs.
-4. Persistence stores snapshot + append-only audit entries.
-5. UI refresh pulls denormalized read models for fast gump rendering.
+**Control Persistence:**  
+Settlement ownership cannot be overridden by NPC raids.
 
 ---
 
-## 2.3 Ultima-Adventures Integration Map (source-of-truth references)
+## 2) Content IDs / Placeholders (Approved)
 
-Use `https://github.com/FinalTwist/Ultima-Adventures` as the canonical source for baseline ServUO/RunUO mechanics and APIs.
+**Stewardship Deed**  
+- ItemID: `0x14EF`  
+- On double-click: target location → place `0x144C` at `<0,0,0>`,  
+  and `0x144B` at `<-1,0,0>` to mark town center
 
-- **Mobiles/NPC AI:** integrate through existing `BaseCreature` behavior model and AI tick/update hooks.
-- **Items/Containers:** reuse standard `Item`, `Container`, stack/amount semantics for stockpiles and reservations.
-- **Regions/Housing/Multis:** hook claim and boundary validation into region + multi placement checks already used by houses/boats.
-- **Skills/Stats:** read and write through built-in skills (`SkillName`) and `Stat` model; avoid parallel stat systems.
-- **Commands/Gumps:** register shard commands with existing command registration pattern and implement gumps with stock gump pipeline.
-- **Persistence:** align with shard save/load cycle patterns and use serial-safe references to mobiles/items.
+**Settlement Boundary**  
+- Rectangle 60x61 tiles around town center
 
-> Implementation rule: when a system can reuse an Ultima-Adventures primitive, wrap it instead of replacing it. New town systems should be additive modules, not engine forks.
+**Gatehouse (placeholder)**  
+- Multi ID `102 (0x66)` — "Small Fieldstone House"
+
+**Fence Statics**  
+- North corners: `0x0290`  
+- South corners: `0x028F`  
+- East/West fencing: `0x028D`  
+- North/South fencing: `0x028E`
+
+Gate opening = 4 missing fence pieces at chosen wall spot.
+
+**Temporary Structures**  
+- Use signposts + server-side zones as placeholder buildings
 
 ---
 
