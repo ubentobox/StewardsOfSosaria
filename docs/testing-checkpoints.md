@@ -82,18 +82,3 @@ Use this as a practical sequence for shard-side testing as features become testa
 - Cooldown active -> deny.
 
 **Pass if:** every matrix row returns expected allow/deny + reason string.
-
-
----
-
-## Checkpoint 7: Audit log events
-
-**When:** after town founding and task operations are wired to `AuditService`.
-
-**Test flow:**
-1. Found a settlement with the deed.
-2. Enqueue one task and reprioritize it.
-3. Create one near-expiry reservation and run expiry sweep.
-4. Query recent audit entries from service (or debug command once added).
-
-**Pass if:** events appear in order with correct event type, town id, actor, and details.
