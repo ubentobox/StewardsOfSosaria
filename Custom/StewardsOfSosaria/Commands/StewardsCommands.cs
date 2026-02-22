@@ -26,13 +26,7 @@ namespace StewardsOfSosaria.Commands
                 }
             }
 
-            if (StewardsRuntime.TownService.AuditSink == null)
-            {
-                e.Mobile.SendMessage("Stewards audit sink is not available.");
-                return;
-            }
-
-            IList entries = StewardsRuntime.TownService.AuditSink.GetRecent(max);
+            IList entries = StewardsRuntime.AuditService.GetRecent(max);
             e.Mobile.SendMessage("Stewards Audit: showing {0} most recent events.", entries.Count);
 
             int i;
