@@ -102,15 +102,6 @@ namespace StewardsOfSosaria.Items
                     point.Y,
                     point.Z);
 
-                if (StewardsRuntime.TownService.AuditSink != null)
-                {
-                    StewardsRuntime.TownService.AuditSink.Append(
-                        AuditEventType.TownFounded,
-                        from.Name,
-                        town.TownId,
-                        "Stewardship deed founded settlement at (" + point.X + "," + point.Y + "," + point.Z + ")");
-                }
-
                 from.SendMessage("Settlement founded: {0}.", town.Name);
                 _deed.Delete();
             }

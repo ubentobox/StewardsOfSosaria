@@ -7,14 +7,10 @@ namespace StewardsOfSosaria.Services
     public sealed class TownService : ITownService
     {
         private readonly Dictionary<Guid, TownAggregate> _towns;
-        private Guid _lastCreatedTownId;
-
-        public AuditService AuditSink { get; set; }
 
         public TownService()
         {
             _towns = new Dictionary<Guid, TownAggregate>();
-            _lastCreatedTownId = Guid.Empty;
         }
 
         public TownAggregate CreateTown(Guid ownerId, TownOwnerType ownerType, string name, int centerX, int centerY, int centerZ)
@@ -39,13 +35,6 @@ namespace StewardsOfSosaria.Services
             town.CenterZ = centerZ;
 
             _towns[town.TownId] = town;
-            _lastCreatedTownId = town.TownId;
-
-            if (AuditSink != null)
-            {
-                AuditSink.Append(AuditEventType.TownFounded, "System", town.TownId, "Town founded at (" + centerX + "," + centerY + "," + centerZ + ") by owner type " + ownerType.ToString());
-            }
-
             return town;
         }
 
@@ -73,17 +62,6 @@ namespace StewardsOfSosaria.Services
             }
 
             return true;
-        }
-
-
-        public TownAggregate GetLastCreatedTown()
-        {
-            if (_lastCreatedTownId == Guid.Empty)
-            {
-                return null;
-            }
-
-            return GetTown(_lastCreatedTownId);
         }
 
         public TownAggregate GetTown(Guid townId)
