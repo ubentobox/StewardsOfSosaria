@@ -12,12 +12,14 @@
 
 ## Next coding steps
 
-1. Implement queue storage + stable priority ordering and reservation expiry sweeper.
-2. Implement deed placement command/item behavior using approved IDs:
+1. Add persistence adapters that serialize `TownAggregate`, `TownTask`, and `TownNpcProfile` using shard-compatible serializers.
+2. Implement queue storage + stable priority ordering and reservation expiry sweeper.
+3. Implement deed placement command/item behavior using approved IDs:
    - deed ItemID: `0x14EF`
    - town center markers: `0x144C` and `0x144B`
-3. Implement boundary checks using the fixed 60x61 rectangle policy around center point.
-4. Add audit event sink and append entries for governance and possession actions.
+4. Implement boundary checks using the fixed 60x61 rectangle policy around center point.
+5. Add initial gump shell commands (`[Town]`, `[TownTask]`, `[TownNpc]`) wired to read-model stubs.
+6. Add audit event sink and append entries for governance and possession actions.
 
 ## Notes
 
@@ -39,9 +41,3 @@ For shard script compilation, place sources under `Custom/StewardsOfSosaria/...`
 - Added `[TownTaskReprio]` and `[TownInfo]` commands to support in-game queue tuning and quick settlement metadata checks.
 
 - Added dependency/reservation helper commands (`[TownTaskDepend]`, `[TownTaskResolve]`, `[TownTaskReserveTest]`, `[TownTaskExpire]`) for rapid in-shard task-system validation.
-
-- Added `[TownTaskSetStatus]` helper command to toggle task state and validate dependency resolution transitions.
-
-- Added v1 shell read-model commands `[Town]`, `[TownTask]`, and `[TownNpc]` to provide a stable operator-facing entry point while gumps are pending.
-
-- Added `StewardsPersistenceSerializer` under `Custom/StewardsOfSosaria/Persistence` to provide versioned shard-compatible read/write helpers for `TownAggregate`, `TownTask`, `ReservationToken`, and `TownNpcProfile`.
