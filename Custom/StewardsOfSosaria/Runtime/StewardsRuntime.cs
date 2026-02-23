@@ -2,6 +2,22 @@ using StewardsOfSosaria.Services;
 
 namespace StewardsOfSosaria.Runtime
 {
+    public static class StewardsRuntime
+    {
+        private static readonly TownService __townSvc = new TownService();
+        private static readonly TaskService __taskSvc = new TaskService();
+        private static readonly PossessionPolicy __possessionSvc = new PossessionPolicy();
+        private static readonly AuditService __auditSvc = new AuditService();
+
+        static StewardsRuntime()
+        {
+            __townSvc.AuditSink = __auditSvc;
+            __taskSvc.AuditSink = __auditSvc;
+        }
+
+        public static TownService TownService
+        {
+            get { return __townSvc; }
     // NOTE: Runtime instances live in StewardsRuntimeState to avoid duplicate field definitions
     // on StewardsRuntime if script compilers merge stale/partial sources.
     internal static class StewardsRuntimeState
@@ -46,17 +62,20 @@ namespace StewardsOfSosaria.Runtime
 
         public static TaskService TaskService
         {
+            get { return __taskSvc; }
             get { return StewardsRuntimeState.Task; }
             get { return _taskService; }
         }
 
         public static PossessionPolicy PossessionPolicy
         {
+            get { return __possessionSvc; }
             get { return StewardsRuntimeState.Possession; }
         }
 
         public static AuditService AuditService
         {
+            get { return __auditSvc; }
             get { return StewardsRuntimeState.Audit; }
             get { return _possessionPolicy; }
         }
