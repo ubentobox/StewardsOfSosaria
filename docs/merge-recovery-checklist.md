@@ -34,28 +34,22 @@ rg -n "CommandSystem.Register\(" Custom/StewardsOfSosaria/Commands/StewardsComma
 
 Expected: each command appears once.
 
-## 4) Verify runtime accessor surface matches command usage
+## 4) Verify runtime accessor style
 
 Run:
 
 ```bash
-rg -n "GetTownService\(|GetTaskService\(|GetAuditService\(|GetPossessionPolicy\(|StewardsRuntime\.(TownService|TaskService|AuditService|PossessionPolicy)" Custom/StewardsOfSosaria
+rg -n "StewardsRuntime\.(TownService|TaskService|AuditService|PossessionPolicy)" Custom
 ```
 
-Expected:
-- `Runtime/StewardsRuntime.cs` contains the property surface (`StewardsRuntime.TownService`, etc.).
-- Command and item scripts should use that same property surface consistently.
+Expected: no property-style matches.
 
-## 5) Clean stale local build artifacts (for local csproj builds)
+Runtime usage should be method-style:
+- `StewardsRuntime.GetTownService()`
+- `StewardsRuntime.GetTaskService()`
+- `StewardsRuntime.GetAuditService()`
+- `StewardsRuntime.GetPossessionPolicy()`
 
-If you compile via MSBuild/dotnet and see duplicate assembly attribute errors (for example `TargetFrameworkAttribute`), clean generated artifacts and rebuild:
-
-```bash
-find . -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +
-```
-
-This does not affect shard script files under `Custom/`.
-
-## 6) Recompile scripts
+## 5) Recompile scripts
 
 After checks pass, re-run shard script compilation.

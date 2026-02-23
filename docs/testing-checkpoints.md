@@ -8,8 +8,6 @@ Use this as a practical sequence for shard-side testing as features become testa
 
 **Test:** shard script compile only.
 
-If a local `obj/` or `bin/` folder exists from a separate MSBuild/dotnet compile, delete those folders first to avoid duplicate assembly attribute errors being pulled into script compilation.
-
 **Pass if:** no compile errors/warnings from Stewards scripts.
 
 ---
@@ -157,36 +155,6 @@ If a local `obj/` or `bin/` folder exists from a separate MSBuild/dotnet compile
 2. Run `[TownTaskList]` and copy both task GUIDs.
 3. Run `[TownTaskDepend <taskA> <taskB>]`.
 4. Run `[TownTaskResolve <taskB>]` and verify unresolved while dependency is not `Done`.
-5. Run `[TownTaskSetStatus <taskA> Done]`, then rerun `[TownTaskResolve <taskB>]` and verify resolved=true.
-6. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
+5. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
 
-**Pass if:** dependency command links tasks correctly, resolve flips false->true after setting dependency to Done, and expiry sweep removes the test reservation token.
-
-
----
-
-## Checkpoint 12: Merge-recovery sanity checks
-
-**When:** after any manual conflict resolution on GitHub (especially “Accept both changes”).
-
-**Test flow:**
-1. Run checks from `docs/merge-recovery-checklist.md`.
-2. Confirm single runtime definition and no conflict markers.
-3. Recompile scripts.
-
-**Pass if:** checks return expected results and compile completes cleanly.
-
----
-
-## Checkpoint 13: Town/TownTask/TownNpc shell commands
-
-**When:** after `[Town]`, `[TownTask]`, and `[TownNpc]` command scripts compile.
-
-**Test flow:**
-1. Found a settlement.
-2. Run `[Town]` and confirm summary lines (name/id/owner/center/boundary/task count).
-3. Run `[TownTask]` and verify it shows the current task count and up to five task summary rows.
-4. Run `[TownNpc]` and verify it prints town context and the v1 stub notice.
-
-**Pass if:** all three shell commands execute without errors and show stable read-model output for the latest settlement.
-
+**Pass if:** dependency command links tasks correctly, resolve reports expected state, and expiry sweep removes the test reservation token.
