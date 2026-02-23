@@ -50,6 +50,7 @@ namespace StewardsOfSosaria.Commands
             task.Priority = priority;
 
             StewardsRuntime.GetTaskService().Enqueue(task);
+            StewardsRuntime.TaskService.Enqueue(task);
             e.Mobile.SendMessage("Added task {0} to town {1} with priority {2}.", task.TaskId, town.Name, task.Priority);
         }
 
