@@ -24,3 +24,20 @@
 ## Notes
 
 This scaffold is intentionally additive and designed to wrap upstream Ultima-Adventures primitives instead of replacing core server systems.
+
+
+## RunUO script placement
+
+For shard script compilation, place sources under `Custom/StewardsOfSosaria/...`.
+
+- Added concrete `TownService` and `TaskService` implementations for v1 overlap checks, task prioritization, dependency resolution, and reservation-expiry sweeping.
+
+- Added `docs/testing-checkpoints.md` with explicit “when to test” milestones for compile, deed placement, boundaries, tasks, reservations, and possession gates.
+
+- Added `AuditService` with append/recent/by-town query support and wired it into runtime + town/task/deed flows for early governance telemetry.
+
+- Added `[TownAudit]` command registration for player-visible audit inspection of recent event history.
+
+- Added `[TownTaskReprio]` and `[TownInfo]` commands to support in-game queue tuning and quick settlement metadata checks.
+
+- Added dependency/reservation helper commands (`[TownTaskDepend]`, `[TownTaskResolve]`, `[TownTaskReserveTest]`, `[TownTaskExpire]`) for rapid in-shard task-system validation.

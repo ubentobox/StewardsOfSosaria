@@ -82,3 +82,79 @@ Use this as a practical sequence for shard-side testing as features become testa
 - Cooldown active -> deny.
 
 **Pass if:** every matrix row returns expected allow/deny + reason string.
+
+
+---
+
+## Checkpoint 7: Audit log events
+
+**When:** after town founding and task operations are wired to `AuditService`.
+
+**Test flow:**
+1. Found a settlement with the deed.
+2. Enqueue one task and reprioritize it.
+3. Create one near-expiry reservation and run expiry sweep.
+4. Query recent audit entries from service (or debug command once added).
+
+**Pass if:** events appear in order with correct event type, town id, actor, and details.
+
+
+---
+
+## Checkpoint 8: TownAudit command output
+
+**When:** after command scripts compile and audit events are being written.
+
+**Test flow:**
+1. Found a settlement and run at least one task operation that logs audit entries.
+2. Run `[TownAudit]` and `[TownAudit 5]`.
+3. Verify command prints the expected number of recent entries and includes event type, town id, actor, and details.
+
+**Pass if:** command responds without errors and displays the newest events in reverse chronological order.
+
+
+---
+
+## Checkpoint 9: Task helper commands
+
+**When:** after `TownTaskAdd` and `TownTaskList` command scripts compile.
+
+**Test flow:**
+1. Found a settlement with deed.
+2. Run `[TownTaskAdd]` and `[TownTaskAdd 80]`.
+3. Run `[TownTaskList]`.
+4. Confirm both tasks appear, with expected priorities and `Haul` type.
+
+**Pass if:** command outputs show task creation and list reflects queued entries for the latest founded town.
+
+
+---
+
+## Checkpoint 10: TownTaskReprio + TownInfo commands
+
+**When:** after command scripts compile and task list output is working.
+
+**Test flow:**
+1. Found a settlement and run `[TownTaskAdd]` twice.
+2. Run `[TownTaskList]` and copy one task guid.
+3. Run `[TownTaskReprio <copiedGuid> 99]`.
+4. Run `[TownTaskList]` again and verify updated priority.
+5. Run `[TownInfo]` and verify town center/boundary/ids match the founded settlement.
+
+**Pass if:** reprioritize command updates the expected task, and town info prints consistent metadata.
+
+
+---
+
+## Checkpoint 11: Dependency + reservation helper commands
+
+**When:** after `TownTaskDepend`, `TownTaskResolve`, `TownTaskReserveTest`, and `TownTaskExpire` compile.
+
+**Test flow:**
+1. Found a settlement and add two tasks via `[TownTaskAdd]`.
+2. Run `[TownTaskList]` and copy both task GUIDs.
+3. Run `[TownTaskDepend <taskA> <taskB>]`.
+4. Run `[TownTaskResolve <taskB>]` and verify unresolved while dependency is not `Done`.
+5. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
+
+**Pass if:** dependency command links tasks correctly, resolve reports expected state, and expiry sweep removes the test reservation token.

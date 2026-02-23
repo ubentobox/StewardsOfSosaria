@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using StewardsOfSosaria.Core;
 
@@ -7,6 +8,8 @@ namespace StewardsOfSosaria.Services
     public sealed class TaskService : ITaskService
     {
         private readonly Dictionary<Guid, List<TownTask>> _tasksByTown;
+
+        public AuditService AuditSink { get; set; }
 
         public TaskService()
         {
@@ -23,6 +26,12 @@ namespace StewardsOfSosaria.Services
             List<TownTask> list = EnsureList(task.TownId);
             list.Add(task);
             list.Sort(CompareTasks);
+
+            if (AuditSink != null)
+            {
+                AuditSink.Append(AuditEventType.TaskQueued, "System", task.TownId, "Task queued: " + task.TaskId.ToString() + " type=" + task.Type.ToString() + " priority=" + task.Priority.ToString());
+            }
+
             return task;
         }
 
@@ -42,6 +51,12 @@ namespace StewardsOfSosaria.Services
 
             task.Priority = priority;
             list.Sort(CompareTasks);
+
+            if (AuditSink != null)
+            {
+                AuditSink.Append(AuditEventType.TaskReprioritized, "System", townId, "Task reprioritized: " + taskId.ToString() + " -> " + priority.ToString());
+            }
+
             return true;
         }
 
@@ -96,12 +111,36 @@ namespace StewardsOfSosaria.Services
                         {
                             expired.Add(token);
                             task.Reservations.RemoveAt(r);
+
+                            if (AuditSink != null)
+                            {
+                                AuditSink.Append(AuditEventType.ReservationExpired, "System", task.TownId, "Reservation expired: token=" + token.TokenId.ToString() + " task=" + task.TaskId.ToString());
+                            }
                         }
                     }
                 }
             }
 
             return expired;
+        }
+
+
+        public IList GetTasksForTown(Guid townId)
+        {
+            List<TownTask> list;
+            if (!_tasksByTown.TryGetValue(townId, out list))
+            {
+                return new ArrayList();
+            }
+
+            ArrayList copy = new ArrayList();
+            int i;
+            for (i = 0; i < list.Count; i++)
+            {
+                copy.Add(list[i]);
+            }
+
+            return copy;
         }
 
         private static int CompareTasks(TownTask a, TownTask b)
