@@ -81,7 +81,7 @@ namespace StewardsOfSosaria.Items
                     return;
                 }
 
-                bool canClaim = StewardsRuntime.GetTownService().CanClaim(point.X, point.Y, 60, 61);
+                bool canClaim = StewardsRuntime.TownService.CanClaim(point.X, point.Y, 60, 61);
                 if (!canClaim)
                 {
                     from.SendMessage("This location overlaps another settlement boundary.");
@@ -94,7 +94,7 @@ namespace StewardsOfSosaria.Items
                 Item markerB = new Static(CenterMarkerSecondary);
                 markerB.MoveToWorld(new Point3D(point.X - 1, point.Y, point.Z), map);
 
-                TownAggregate town = StewardsRuntime.GetTownService().CreateTown(
+                TownAggregate town = StewardsRuntime.TownService.CreateTown(
                     Guid.NewGuid(),
                     TownOwnerType.Player,
                     BuildTownName(from),
@@ -102,9 +102,9 @@ namespace StewardsOfSosaria.Items
                     point.Y,
                     point.Z);
 
-                if (StewardsRuntime.GetTownService().AuditSink != null)
+                if (StewardsRuntime.TownService.AuditSink != null)
                 {
-                    StewardsRuntime.GetTownService().AuditSink.Append(
+                    StewardsRuntime.TownService.AuditSink.Append(
                         AuditEventType.TownFounded,
                         from.Name,
                         town.TownId,

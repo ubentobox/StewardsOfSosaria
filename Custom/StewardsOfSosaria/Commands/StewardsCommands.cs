@@ -27,6 +27,7 @@ namespace StewardsOfSosaria.Commands
         private static void OnTownTaskAdd(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -50,12 +51,14 @@ namespace StewardsOfSosaria.Commands
             task.Priority = priority;
 
             StewardsRuntime.GetTaskService().Enqueue(task);
+            StewardsRuntime.TaskService.Enqueue(task);
             e.Mobile.SendMessage("Added task {0} to town {1} with priority {2}.", task.TaskId, town.Name, task.Priority);
         }
 
         private static void OnTownTaskList(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -63,6 +66,7 @@ namespace StewardsOfSosaria.Commands
             }
 
             IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(town.TownId);
+            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(town.TownId);
             e.Mobile.SendMessage("Town tasks for {0}: {1} entries.", town.Name, tasks.Count);
 
             int i;
@@ -76,6 +80,7 @@ namespace StewardsOfSosaria.Commands
         private static void OnTownTaskReprio(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -101,6 +106,7 @@ namespace StewardsOfSosaria.Commands
 
             int priority = e.GetInt32(1);
             bool ok = StewardsRuntime.GetTaskService().Reprioritize(town.TownId, taskId, priority);
+            bool ok = StewardsRuntime.TaskService.Reprioritize(town.TownId, taskId, priority);
             if (!ok)
             {
                 e.Mobile.SendMessage("Task not found in latest settlement queue.");
@@ -113,6 +119,7 @@ namespace StewardsOfSosaria.Commands
         private static void OnTownInfo(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -130,6 +137,7 @@ namespace StewardsOfSosaria.Commands
         private static void OnTownTaskDepend(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -176,6 +184,7 @@ namespace StewardsOfSosaria.Commands
         private static void OnTownTaskResolve(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -208,12 +217,14 @@ namespace StewardsOfSosaria.Commands
 
             Dictionary<Guid, TownTaskStatus> status = BuildStatusMap(town.TownId);
             bool resolved = StewardsRuntime.GetTaskService().ResolveDependencies(task, status);
+            bool resolved = StewardsRuntime.TaskService.ResolveDependencies(task, status);
             e.Mobile.SendMessage("Task {0} dependency status resolved={1}", taskId, resolved);
         }
 
         private static void OnTownTaskReserveTest(CommandEventArgs e)
         {
             TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -231,6 +242,7 @@ namespace StewardsOfSosaria.Commands
             }
 
             IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(town.TownId);
+            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(town.TownId);
             if (tasks.Count == 0)
             {
                 e.Mobile.SendMessage("No tasks available for reservation test.");
@@ -252,12 +264,14 @@ namespace StewardsOfSosaria.Commands
         private static void OnTownTaskExpire(CommandEventArgs e)
         {
             IList<ReservationToken> expired = StewardsRuntime.GetTaskService().ExpireReservations(DateTime.UtcNow);
+            IList<ReservationToken> expired = StewardsRuntime.TaskService.ExpireReservations(DateTime.UtcNow);
             e.Mobile.SendMessage("Expired reservation sweep removed {0} token(s).", expired.Count);
         }
 
         private static Dictionary<Guid, TownTaskStatus> BuildStatusMap(Guid townId)
         {
             IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(townId);
+            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(townId);
             Dictionary<Guid, TownTaskStatus> status = new Dictionary<Guid, TownTaskStatus>();
 
             int i;
@@ -273,6 +287,7 @@ namespace StewardsOfSosaria.Commands
         private static TownTask FindTaskById(Guid townId, Guid taskId)
         {
             IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(townId);
+            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(townId);
             int i;
             for (i = 0; i < tasks.Count; i++)
             {
@@ -299,12 +314,15 @@ namespace StewardsOfSosaria.Commands
             }
 
             if (StewardsRuntime.GetTownService().AuditSink == null)
+            if (StewardsRuntime.TownService.AuditSink == null)
             {
                 e.Mobile.SendMessage("Stewards audit sink is not available.");
                 return;
             }
 
             IList entries = StewardsRuntime.GetTownService().AuditSink.GetRecent(max);
+            IList entries = StewardsRuntime.TownService.AuditSink.GetRecent(max);
+            IList entries = StewardsRuntime.AuditService.GetRecent(max);
             e.Mobile.SendMessage("Stewards Audit: showing {0} most recent events.", entries.Count);
 
             int i;
