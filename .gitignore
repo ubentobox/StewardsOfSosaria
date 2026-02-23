@@ -1,0 +1,8 @@
+# Local .NET/MSBuild artifacts
+bin/
+obj/
+
+# IDE files
+.vs/
+*.user
+*.suo
