@@ -305,6 +305,7 @@ namespace StewardsOfSosaria.Commands
             }
 
             IList entries = StewardsRuntime.TownService.AuditSink.GetRecent(max);
+            IList entries = StewardsRuntime.AuditService.GetRecent(max);
             e.Mobile.SendMessage("Stewards Audit: showing {0} most recent events.", entries.Count);
 
             int i;
