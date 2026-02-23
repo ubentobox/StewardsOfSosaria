@@ -2,54 +2,82 @@ using StewardsOfSosaria.Services;
 
 namespace StewardsOfSosaria.Runtime
 {
-    /// <summary>
-    /// Single runtime access point for Steward services.
-    /// Keeps instances centralized and avoids duplicate field definitions.
-    /// </summary>
     public static class StewardsRuntime
     {
-        // NOTE:
-        // Some script compilers will merge/retain partial stale sources and can end up duplicating
-        // fields on the same type. Putting instances in a nested type helps avoid that.
-        private static class State
-        {
-            internal static readonly TownService Town = new TownService();
-            internal static readonly TaskService Task = new TaskService();
-            internal static readonly PossessionPolicy Possession = new PossessionPolicy();
-            internal static readonly AuditService Audit = new AuditService();
+        private static readonly TownService __townSvc = new TownService();
+        private static readonly TaskService __taskSvc = new TaskService();
+        private static readonly PossessionPolicy __possessionSvc = new PossessionPolicy();
+        private static readonly AuditService __auditSvc = new AuditService();
 
-            static State()
-            {
-                Town.AuditSink = Audit;
-                Task.AuditSink = Audit;
-            }
+        static StewardsRuntime()
+        {
+            __townSvc.AuditSink = __auditSvc;
+            __taskSvc.AuditSink = __auditSvc;
         }
 
-        // Legacy-safe property syntax (avoid expression-bodied members for older script compilers)
         public static TownService TownService
         {
-            get { return State.Town; }
+            get { return __townSvc; }
+    // NOTE: Runtime instances live in StewardsRuntimeState to avoid duplicate field definitions
+    // on StewardsRuntime if script compilers merge stale/partial sources.
+    internal static class StewardsRuntimeState
+    {
+        internal static readonly TownService Town = new TownService();
+        internal static readonly TaskService Task = new TaskService();
+        internal static readonly PossessionPolicy Possession = new PossessionPolicy();
+        internal static readonly AuditService Audit = new AuditService();
+
+        static StewardsRuntimeState()
+        {
+            Town.AuditSink = Audit;
+            Task.AuditSink = Audit;
+        }
+    }
+
+    public static class StewardsRuntime
+    {
+        public static TownService TownService
+        {
+            get { return StewardsRuntimeState.Town; }
+    public static class StewardsRuntime
+    {
+        static StewardsRuntime()
+        {
+            _townService.AuditSink = _auditService;
+            _taskService.AuditSink = _auditService;
+        }
+
+        private static readonly TownService _townService = new TownService();
+        private static readonly TaskService _taskService = new TaskService();
+        private static readonly PossessionPolicy _possessionPolicy = new PossessionPolicy();
+        private static readonly AuditService _auditService = new AuditService();
+        private static readonly TownService _townService = new TownService();
+        private static readonly TaskService _taskService = new TaskService();
+        private static readonly PossessionPolicy _possessionPolicy = new PossessionPolicy();
+
+        public static TownService TownService
+        {
+            get { return _townService; }
         }
 
         public static TaskService TaskService
         {
-            get { return State.Task; }
+            get { return __taskSvc; }
+            get { return StewardsRuntimeState.Task; }
+            get { return _taskService; }
         }
 
         public static PossessionPolicy PossessionPolicy
         {
-            get { return State.Possession; }
+            get { return __possessionSvc; }
+            get { return StewardsRuntimeState.Possession; }
         }
 
         public static AuditService AuditService
         {
-            get { return State.Audit; }
+            get { return __auditSvc; }
+            get { return StewardsRuntimeState.Audit; }
+            get { return _possessionPolicy; }
         }
-
-        // Backward-compatible method accessors used by existing scripts in this repo.
-        public static TownService GetTownService() { return State.Town; }
-        public static TaskService GetTaskService() { return State.Task; }
-        public static PossessionPolicy GetPossessionPolicy() { return State.Possession; }
-        public static AuditService GetAuditService() { return State.Audit; }
     }
 }
