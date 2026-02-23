@@ -8,42 +8,76 @@ namespace StewardsOfSosaria.Runtime
         private static readonly TaskService __taskSvc = new TaskService();
         private static readonly PossessionPolicy __possessionSvc = new PossessionPolicy();
         private static readonly AuditService __auditSvc = new AuditService();
-        private static bool __wired;
 
-        private static void EnsureWired()
+        static StewardsRuntime()
         {
-            if (__wired)
-            {
-                return;
-            }
-
             __townSvc.AuditSink = __auditSvc;
             __taskSvc.AuditSink = __auditSvc;
-            __wired = true;
         }
 
-        public static TownService GetTownService()
+        public static TownService TownService
         {
-            EnsureWired();
-            return __townSvc;
+            get { return __townSvc; }
+    // NOTE: Runtime instances live in StewardsRuntimeState to avoid duplicate field definitions
+    // on StewardsRuntime if script compilers merge stale/partial sources.
+    internal static class StewardsRuntimeState
+    {
+        internal static readonly TownService Town = new TownService();
+        internal static readonly TaskService Task = new TaskService();
+        internal static readonly PossessionPolicy Possession = new PossessionPolicy();
+        internal static readonly AuditService Audit = new AuditService();
+
+        static StewardsRuntimeState()
+        {
+            Town.AuditSink = Audit;
+            Task.AuditSink = Audit;
+        }
+    }
+
+    public static class StewardsRuntime
+    {
+        public static TownService TownService
+        {
+            get { return StewardsRuntimeState.Town; }
+    public static class StewardsRuntime
+    {
+        static StewardsRuntime()
+        {
+            _townService.AuditSink = _auditService;
+            _taskService.AuditSink = _auditService;
         }
 
-        public static TaskService GetTaskService()
+        private static readonly TownService _townService = new TownService();
+        private static readonly TaskService _taskService = new TaskService();
+        private static readonly PossessionPolicy _possessionPolicy = new PossessionPolicy();
+        private static readonly AuditService _auditService = new AuditService();
+        private static readonly TownService _townService = new TownService();
+        private static readonly TaskService _taskService = new TaskService();
+        private static readonly PossessionPolicy _possessionPolicy = new PossessionPolicy();
+
+        public static TownService TownService
         {
-            EnsureWired();
-            return __taskSvc;
+            get { return _townService; }
         }
 
-        public static PossessionPolicy GetPossessionPolicy()
+        public static TaskService TaskService
         {
-            EnsureWired();
-            return __possessionSvc;
+            get { return __taskSvc; }
+            get { return StewardsRuntimeState.Task; }
+            get { return _taskService; }
         }
 
-        public static AuditService GetAuditService()
+        public static PossessionPolicy PossessionPolicy
         {
-            EnsureWired();
-            return __auditSvc;
+            get { return __possessionSvc; }
+            get { return StewardsRuntimeState.Possession; }
+        }
+
+        public static AuditService AuditService
+        {
+            get { return __auditSvc; }
+            get { return StewardsRuntimeState.Audit; }
+            get { return _possessionPolicy; }
         }
     }
 }

@@ -158,17 +158,3 @@ Use this as a practical sequence for shard-side testing as features become testa
 5. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
 
 **Pass if:** dependency command links tasks correctly, resolve reports expected state, and expiry sweep removes the test reservation token.
-
-
----
-
-## Checkpoint 12: Merge-recovery sanity checks
-
-**When:** after any manual conflict resolution on GitHub (especially “Accept both changes”).
-
-**Test flow:**
-1. Run checks from `docs/merge-recovery-checklist.md`.
-2. Confirm single runtime definition and no conflict markers.
-3. Recompile scripts.
-
-**Pass if:** checks return expected results and compile completes cleanly.
