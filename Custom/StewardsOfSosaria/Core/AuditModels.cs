@@ -7,9 +7,6 @@ namespace StewardsOfSosaria.Core
         TownFounded,
         TaskQueued,
         TaskReprioritized,
-        TaskStarted,
-        TaskCompleted,
-        TaskFailed,
         ReservationExpired,
         PossessionAttempt
     }
