@@ -23,10 +23,10 @@ namespace StewardsOfSosaria.Persistence
             }
 
             writer.Write((int)0); // version
-            WriteGuid(writer, town.TownId);
+            writer.Write(town.TownId);
             writer.Write(town.Name);
             writer.Write((int)town.OwnerType);
-            WriteGuid(writer, town.OwnerId);
+            writer.Write(town.OwnerId);
             writer.Write(town.BoundaryRegionId);
             writer.Write(town.CenterX);
             writer.Write(town.CenterY);
@@ -56,10 +56,10 @@ namespace StewardsOfSosaria.Persistence
             }
 
             TownAggregate town = new TownAggregate();
-            town.TownId = ReadGuid(reader);
+            town.TownId = reader.ReadGuid();
             town.Name = reader.ReadString();
             town.OwnerType = (TownOwnerType)reader.ReadInt();
-            town.OwnerId = ReadGuid(reader);
+            town.OwnerId = reader.ReadGuid();
             town.BoundaryRegionId = reader.ReadString();
             town.CenterX = reader.ReadInt();
             town.CenterY = reader.ReadInt();
@@ -89,8 +89,8 @@ namespace StewardsOfSosaria.Persistence
             }
 
             writer.Write((int)0); // version
-            WriteGuid(writer, task.TaskId);
-            WriteGuid(writer, task.TownId);
+            writer.Write(task.TaskId);
+            writer.Write(task.TownId);
             writer.Write((int)task.Type);
             writer.Write(task.Priority);
             writer.Write((int)task.Status);
@@ -99,7 +99,7 @@ namespace StewardsOfSosaria.Persistence
             int i;
             for (i = 0; i < task.DependencyTaskIds.Count; i++)
             {
-                WriteGuid(writer, task.DependencyTaskIds[i]);
+                writer.Write(task.DependencyTaskIds[i]);
             }
 
             writer.Write(task.Reservations.Count);
@@ -125,8 +125,8 @@ namespace StewardsOfSosaria.Persistence
             }
 
             TownTask task = new TownTask();
-            task.TaskId = ReadGuid(reader);
-            task.TownId = ReadGuid(reader);
+            task.TaskId = reader.ReadGuid();
+            task.TownId = reader.ReadGuid();
             task.Type = (TownTaskType)reader.ReadInt();
             task.Priority = reader.ReadInt();
             task.Status = (TownTaskStatus)reader.ReadInt();
@@ -135,7 +135,7 @@ namespace StewardsOfSosaria.Persistence
             int i;
             for (i = 0; i < dependencyCount; i++)
             {
-                task.DependencyTaskIds.Add(ReadGuid(reader));
+                task.DependencyTaskIds.Add(reader.ReadGuid());
             }
 
             int reservationCount = reader.ReadInt();
@@ -162,7 +162,7 @@ namespace StewardsOfSosaria.Persistence
 
             writer.Write((int)0); // version
             writer.Write(npc.NpcSerial);
-            WriteGuid(writer, npc.TownId);
+            writer.Write(npc.TownId);
             writer.Write((int)npc.AutonomyMode);
             writer.Write(npc.PossessionCooldownUntilUtc);
             writer.Write(npc.LastCombatUtc);
@@ -183,34 +183,17 @@ namespace StewardsOfSosaria.Persistence
 
             TownNpcProfile npc = new TownNpcProfile();
             npc.NpcSerial = reader.ReadInt();
-            npc.TownId = ReadGuid(reader);
+            npc.TownId = reader.ReadGuid();
             npc.AutonomyMode = (NpcAutonomyMode)reader.ReadInt();
             npc.PossessionCooldownUntilUtc = reader.ReadDateTime();
             npc.LastCombatUtc = reader.ReadDateTime();
             return npc;
         }
 
-
-        private static void WriteGuid(GenericWriter writer, Guid value)
-        {
-            writer.Write(value.ToString());
-        }
-
-        private static Guid ReadGuid(GenericReader reader)
-        {
-            string raw = reader.ReadString();
-            if (string.IsNullOrEmpty(raw))
-            {
-                return Guid.Empty;
-            }
-
-            return new Guid(raw);
-        }
-
         private static void WriteReservationToken(GenericWriter writer, ReservationToken token)
         {
-            WriteGuid(writer, token.TokenId);
-            WriteGuid(writer, token.TaskId);
+            writer.Write(token.TokenId);
+            writer.Write(token.TaskId);
             writer.Write(token.ItemSerial);
             writer.Write(token.Amount);
             writer.Write(token.ExpiresAtUtc);
@@ -219,8 +202,8 @@ namespace StewardsOfSosaria.Persistence
         private static ReservationToken ReadReservationToken(GenericReader reader)
         {
             ReservationToken token = new ReservationToken();
-            token.TokenId = ReadGuid(reader);
-            token.TaskId = ReadGuid(reader);
+            token.TokenId = reader.ReadGuid();
+            token.TaskId = reader.ReadGuid();
             token.ItemSerial = reader.ReadInt();
             token.Amount = reader.ReadInt();
             token.ExpiresAtUtc = reader.ReadDateTime();

@@ -8,8 +8,6 @@ Use this as a practical sequence for shard-side testing as features become testa
 
 **Test:** shard script compile only.
 
-If a local `obj/` or `bin/` folder exists from a separate MSBuild/dotnet compile, delete those folders first to avoid duplicate assembly attribute errors being pulled into script compilation.
-
 **Pass if:** no compile errors/warnings from Stewards scripts.
 
 ---
@@ -74,7 +72,7 @@ If a local `obj/` or `bin/` folder exists from a separate MSBuild/dotnet compile
 
 ## Checkpoint 6: Possession gates
 
-**When:** possession command/hook is connected to `PossessionPolicy` (e.g., `[TownPossessCheck]`).
+**When:** possession command/hook is connected to `PossessionPolicy`.
 
 **Test matrix:**
 - Allowed role in safe region, no cooldown, no recent combat -> allow.
@@ -157,97 +155,6 @@ If a local `obj/` or `bin/` folder exists from a separate MSBuild/dotnet compile
 2. Run `[TownTaskList]` and copy both task GUIDs.
 3. Run `[TownTaskDepend <taskA> <taskB>]`.
 4. Run `[TownTaskResolve <taskB>]` and verify unresolved while dependency is not `Done`.
-5. Run `[TownTaskSetStatus <taskA> Done]`, then rerun `[TownTaskResolve <taskB>]` and verify resolved=true.
-6. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
+5. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
 
-**Pass if:** dependency command links tasks correctly, resolve flips false->true after setting dependency to Done, and expiry sweep removes the test reservation token.
-
-
----
-
-## Checkpoint 12: Merge-recovery sanity checks
-
-**When:** after any manual conflict resolution on GitHub (especially “Accept both changes”).
-
-**Test flow:**
-1. Run checks from `docs/merge-recovery-checklist.md`.
-2. Confirm single runtime definition and no conflict markers.
-3. Recompile scripts.
-
-**Pass if:** checks return expected results and compile completes cleanly.
-
----
-
-## Checkpoint 13: Town/TownTask/TownNpc shell commands
-
-**When:** after `[Town]`, `[TownTask]`, and `[TownNpc]` command scripts compile.
-
-**Test flow:**
-1. Found a settlement.
-2. Run `[Town]` and confirm summary lines (name/id/owner/center/boundary/task count).
-3. Run `[TownTask]` and verify it shows the current task count and up to five task summary rows.
-4. Run `[TownNpc]` and verify it prints town context and the v1 stub notice.
-
-**Pass if:** all three shell commands execute without errors and show stable read-model output for the latest settlement.
-
----
-
-## Checkpoint 14: Persistence serializer round-trip
-
-**When:** after `StewardsPersistenceSerializer` compiles.
-
-**Test flow:**
-1. Create one `TownAggregate`, one `TownTask` (with at least one dependency and reservation), and one `TownNpcProfile` in a local harness or temporary script.
-2. Serialize each model using `StewardsPersistenceSerializer.Write...` methods.
-3. Deserialize each model using matching `Read...` methods.
-4. Compare key fields (ids, enum values, coordinates, status, reservation values, cooldown/combat timestamps).
-
-**Pass if:** serialized models deserialize successfully and key fields match expected values for each model type.
-
----
-
-## Checkpoint 15: TownPossessCheck command + audit
-
-**When:** after `[TownPossessCheck]` compiles.
-
-**Test flow:**
-1. Found a settlement.
-2. Run `[TownPossessCheck Governor 0 999 0]` and expect allow=true.
-3. Run `[TownPossessCheck Peasant 0 999 0]` and expect deny by role.
-4. Run `[TownPossessCheck Governor 1 999 0]` and expect deny by blocked region.
-5. Run `[TownPossessCheck Governor 0 1 0]` and expect deny by recent combat.
-6. Run `[TownPossessCheck Governor 0 999 30]` and expect deny by cooldown.
-7. Run `[TownAudit 10]` and confirm `PossessionAttempt` entries are present with details.
-
-**Pass if:** policy gates return expected allow/deny reasons and each check appends an audit entry.
-
----
-
-## Checkpoint 16: TownTaskNext executable preview
-
-**When:** after `[TownTaskNext]` compiles.
-
-**Test flow:**
-1. Found a settlement and add two tasks (`[TownTaskAdd]` twice).
-2. Set one task to depend on the other with `[TownTaskDepend <taskA> <taskB>]`.
-3. Run `[TownTaskNext]` and verify it selects the executable queued task (dependency-satisfied one).
-4. Set prerequisite to `Done` with `[TownTaskSetStatus <taskA> Done]`.
-5. Run `[TownTaskNext]` again and verify the dependent task can now be selected.
-
-**Pass if:** command consistently returns the highest-priority queued task whose dependencies are satisfied.
-
----
-
-## Checkpoint 17: Task start/complete flow commands
-
-**When:** after `[TownTaskStartNext]` and `[TownTaskDone]` compile.
-
-**Test flow:**
-1. Found a settlement and add two tasks with different priorities.
-2. Run `[TownTaskStartNext]` and verify the highest-priority executable queued task moves to `InProgress`.
-3. Run `[TownTaskList]` and copy the started task GUID.
-4. Run `[TownTaskDone <startedTaskGuid>]` and verify it becomes `Done`.
-5. Run `[TownAudit 10]` and confirm `TaskStarted` and `TaskCompleted` entries are present.
-
-**Pass if:** start/complete transitions occur as expected and both transitions are recorded in audit history.
-
+**Pass if:** dependency command links tasks correctly, resolve reports expected state, and expiry sweep removes the test reservation token.
