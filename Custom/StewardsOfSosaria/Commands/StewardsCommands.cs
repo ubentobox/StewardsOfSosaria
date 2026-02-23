@@ -21,13 +21,12 @@ namespace StewardsOfSosaria.Commands
             CommandSystem.Register("TownTaskResolve", AccessLevel.Player, new CommandEventHandler(OnTownTaskResolve));
             CommandSystem.Register("TownTaskReserveTest", AccessLevel.Player, new CommandEventHandler(OnTownTaskReserveTest));
             CommandSystem.Register("TownTaskExpire", AccessLevel.Player, new CommandEventHandler(OnTownTaskExpire));
-            CommandSystem.Register("TownTaskSetStatus", AccessLevel.Player, new CommandEventHandler(OnTownTaskSetStatus));
         }
 
 
         private static void OnTownTaskAdd(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -50,20 +49,21 @@ namespace StewardsOfSosaria.Commands
             task.Type = TownTaskType.Haul;
             task.Priority = priority;
 
+            StewardsRuntime.GetTaskService().Enqueue(task);
             StewardsRuntime.TaskService.Enqueue(task);
             e.Mobile.SendMessage("Added task {0} to town {1} with priority {2}.", task.TaskId, town.Name, task.Priority);
         }
 
         private static void OnTownTaskList(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
                 return;
             }
 
-            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(town.TownId);
+            IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(town.TownId);
             e.Mobile.SendMessage("Town tasks for {0}: {1} entries.", town.Name, tasks.Count);
 
             int i;
@@ -76,7 +76,7 @@ namespace StewardsOfSosaria.Commands
 
         private static void OnTownTaskReprio(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -101,7 +101,7 @@ namespace StewardsOfSosaria.Commands
             }
 
             int priority = e.GetInt32(1);
-            bool ok = StewardsRuntime.TaskService.Reprioritize(town.TownId, taskId, priority);
+            bool ok = StewardsRuntime.GetTaskService().Reprioritize(town.TownId, taskId, priority);
             if (!ok)
             {
                 e.Mobile.SendMessage("Task not found in latest settlement queue.");
@@ -113,7 +113,7 @@ namespace StewardsOfSosaria.Commands
 
         private static void OnTownInfo(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -130,7 +130,7 @@ namespace StewardsOfSosaria.Commands
 
         private static void OnTownTaskDepend(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -176,7 +176,7 @@ namespace StewardsOfSosaria.Commands
 
         private static void OnTownTaskResolve(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -208,13 +208,13 @@ namespace StewardsOfSosaria.Commands
             }
 
             Dictionary<Guid, TownTaskStatus> status = BuildStatusMap(town.TownId);
-            bool resolved = StewardsRuntime.TaskService.ResolveDependencies(task, status);
+            bool resolved = StewardsRuntime.GetTaskService().ResolveDependencies(task, status);
             e.Mobile.SendMessage("Task {0} dependency status resolved={1}", taskId, resolved);
         }
 
         private static void OnTownTaskReserveTest(CommandEventArgs e)
         {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
+            TownAggregate town = StewardsRuntime.GetTownService().GetLastCreatedTown();
             if (town == null)
             {
                 e.Mobile.SendMessage("No settlement has been founded yet.");
@@ -231,7 +231,7 @@ namespace StewardsOfSosaria.Commands
                 }
             }
 
-            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(town.TownId);
+            IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(town.TownId);
             if (tasks.Count == 0)
             {
                 e.Mobile.SendMessage("No tasks available for reservation test.");
@@ -250,73 +250,15 @@ namespace StewardsOfSosaria.Commands
             e.Mobile.SendMessage("Added reservation token {0} on task {1}, expires in {2}s.", token.TokenId, task.TaskId, seconds);
         }
 
-        private static void OnTownTaskSetStatus(CommandEventArgs e)
-        {
-            TownAggregate town = StewardsRuntime.TownService.GetLastCreatedTown();
-            if (town == null)
-            {
-                e.Mobile.SendMessage("No settlement has been founded yet.");
-                return;
-            }
-
-            if (e.Length < 2)
-            {
-                e.Mobile.SendMessage("Usage: [TownTaskSetStatus <taskGuid> <Queued|Reserved|InProgress|Blocked|Done|Failed|Canceled>]");
-                return;
-            }
-
-            Guid taskId;
-            try
-            {
-                taskId = new Guid(e.GetString(0));
-            }
-            catch
-            {
-                e.Mobile.SendMessage("Invalid task guid format.");
-                return;
-            }
-
-            TownTask task = FindTaskById(town.TownId, taskId);
-            if (task == null)
-            {
-                e.Mobile.SendMessage("Task not found in latest settlement queue.");
-                return;
-            }
-
-            TownTaskStatus status;
-            if (!TryParseTaskStatus(e.GetString(1), out status))
-            {
-                e.Mobile.SendMessage("Invalid status value.");
-                return;
-            }
-
-            task.Status = status;
-            e.Mobile.SendMessage("Task {0} status set to {1}.", task.TaskId, task.Status);
-        }
-
-        private static bool TryParseTaskStatus(string value, out TownTaskStatus status)
-        {
-            if (string.Equals(value, "Queued", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.Queued; return true; }
-            if (string.Equals(value, "Reserved", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.Reserved; return true; }
-            if (string.Equals(value, "InProgress", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.InProgress; return true; }
-            if (string.Equals(value, "Blocked", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.Blocked; return true; }
-            if (string.Equals(value, "Done", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.Done; return true; }
-            if (string.Equals(value, "Failed", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.Failed; return true; }
-            if (string.Equals(value, "Canceled", StringComparison.OrdinalIgnoreCase)) { status = TownTaskStatus.Canceled; return true; }
-
-            status = TownTaskStatus.Queued;
-            return false;
-        }
-
         private static void OnTownTaskExpire(CommandEventArgs e)
         {
-            IList<ReservationToken> expired = StewardsRuntime.TaskService.ExpireReservations(DateTime.UtcNow);
+            IList<ReservationToken> expired = StewardsRuntime.GetTaskService().ExpireReservations(DateTime.UtcNow);
             e.Mobile.SendMessage("Expired reservation sweep removed {0} token(s).", expired.Count);
         }
 
         private static Dictionary<Guid, TownTaskStatus> BuildStatusMap(Guid townId)
         {
-            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(townId);
+            IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(townId);
             Dictionary<Guid, TownTaskStatus> status = new Dictionary<Guid, TownTaskStatus>();
 
             int i;
@@ -331,7 +273,7 @@ namespace StewardsOfSosaria.Commands
 
         private static TownTask FindTaskById(Guid townId, Guid taskId)
         {
-            IList tasks = StewardsRuntime.TaskService.GetTasksForTown(townId);
+            IList tasks = StewardsRuntime.GetTaskService().GetTasksForTown(townId);
             int i;
             for (i = 0; i < tasks.Count; i++)
             {
@@ -357,13 +299,13 @@ namespace StewardsOfSosaria.Commands
                 }
             }
 
-            if (StewardsRuntime.TownService.AuditSink == null)
+            if (StewardsRuntime.GetTownService().AuditSink == null)
             {
                 e.Mobile.SendMessage("Stewards audit sink is not available.");
                 return;
             }
 
-            IList entries = StewardsRuntime.TownService.AuditSink.GetRecent(max);
+            IList entries = StewardsRuntime.GetTownService().AuditSink.GetRecent(max);
             e.Mobile.SendMessage("Stewards Audit: showing {0} most recent events.", entries.Count);
 
             int i;

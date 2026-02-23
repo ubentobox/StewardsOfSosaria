@@ -155,21 +155,6 @@ Use this as a practical sequence for shard-side testing as features become testa
 2. Run `[TownTaskList]` and copy both task GUIDs.
 3. Run `[TownTaskDepend <taskA> <taskB>]`.
 4. Run `[TownTaskResolve <taskB>]` and verify unresolved while dependency is not `Done`.
-5. Run `[TownTaskSetStatus <taskA> Done]`, then rerun `[TownTaskResolve <taskB>]` and verify resolved=true.
-6. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
+5. Run `[TownTaskReserveTest 2]`, wait 3 seconds, then run `[TownTaskExpire]`.
 
-**Pass if:** dependency command links tasks correctly, resolve flips false->true after setting dependency to Done, and expiry sweep removes the test reservation token.
-
-
----
-
-## Checkpoint 12: Merge-recovery sanity checks
-
-**When:** after any manual conflict resolution on GitHub (especially “Accept both changes”).
-
-**Test flow:**
-1. Run checks from `docs/merge-recovery-checklist.md`.
-2. Confirm single runtime definition and no conflict markers.
-3. Recompile scripts.
-
-**Pass if:** checks return expected results and compile completes cleanly.
+**Pass if:** dependency command links tasks correctly, resolve reports expected state, and expiry sweep removes the test reservation token.

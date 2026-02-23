@@ -41,5 +41,3 @@ For shard script compilation, place sources under `Custom/StewardsOfSosaria/...`
 - Added `[TownTaskReprio]` and `[TownInfo]` commands to support in-game queue tuning and quick settlement metadata checks.
 
 - Added dependency/reservation helper commands (`[TownTaskDepend]`, `[TownTaskResolve]`, `[TownTaskReserveTest]`, `[TownTaskExpire]`) for rapid in-shard task-system validation.
-
-- Added `[TownTaskSetStatus]` helper command to toggle task state and validate dependency resolution transitions.
